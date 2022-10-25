@@ -37,12 +37,9 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     name = models.CharField(max_length=500, default="Guest")
     userImage = models.ImageField(
         upload_to="userImage/", null=True, blank=True, default="userImage/default.png")
-    mobileNo = models.CharField(
-        max_length=20, default="", null=True, blank=True)
     profession = models.CharField(
         max_length=100, default="", null=True, blank=True)
     userBio = models.TextField(max_length=222, null=True, blank=True)
-    address = models.TextField(null=True, blank=True)
 
     is_staff = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)

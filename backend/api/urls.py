@@ -13,8 +13,8 @@ urlpatterns = [
     path('editblog/<int:id_no>/', views.BlogEditView.as_view()),
 
     path('addlike/<int:id_no>/', views.AddLikeView.as_view()),
+    path('comments/<int:id_no>/', views.ShowCommentView.as_view()),
     path('addcomment/', views.AddCommentView.as_view()),
-    # path('editcomment/<int:id_no>/', views.AddCommentView.as_view()),
     path('editcomment/<int:id_no>/', views.EditCommentView.as_view()),
 
     path('addcontact/', views.AddContactView.as_view()),

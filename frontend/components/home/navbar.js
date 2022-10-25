@@ -49,7 +49,7 @@ export default function navbar() {
         <header id="header" className={`header fixed-top shadow-${shadow} p-3 mb-5 bg-${bg} rounded`}>
             <div className="container-fluid container-xl d-flex align-items-center justify-content-between">
 
-                <a href="index.html" className="logo d-flex align-items-center">
+                <a href="/" className="logo d-flex align-items-center">
                     <img src="/assets/img/logo.png" alt="" />
                     <span>FlexStart</span>
                 </a>

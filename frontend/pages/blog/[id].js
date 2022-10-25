@@ -1,9 +1,32 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Bloglayout from '../../layout/home/bloglayout';
 import Comments from '../../components/home/comments';
 import parseddate from '../../scripts/parseddate';
+import InfiniteScroll from 'react-infinite-scroll-component';
 
 export default function blog({ blog, categories, recentBlogs }) {
+
+    const [comment, setComment] = useState([])
+    const [nextLink, setNextLink] = useState(`http://127.0.0.1:8000/api/comments/${blog.id_no}/`)
+    const [hasMore, setHasMore] = useState(true)
+    const [totalComment, setTotalComment] = useState(1)
+
+    const fetchNextComment = async () => {
+        await fetch(nextLink)
+            .then(async response => await response.json())
+            .then(response => {
+                setComment(comment.concat(response.results))
+                setTotalComment(response.count - response.results.length)
+                if (response.next === null) {
+                    setHasMore(false)
+                }
+                else {
+                    setHasMore(true)
+                    setNextLink(response.next);
+                }
+            })
+    }
+
     return (
         <Bloglayout title={blog.title} categories={categories} recentBlogs={recentBlogs} tags={blog.seo_tags.split(',')}>
             <article className="entry entry-single">
@@ -86,7 +109,9 @@ export default function blog({ blog, categories, recentBlogs }) {
                 </div>
             </div>
 
-            <Comments commentno={blog.commentNo} comments={blog.comments} user={blog.requestedUser} />
+            <InfiniteScroll dataLength={totalComment} next={fetchNextComment} hasMore={hasMore} loader={<h4>Loading...</h4>}>
+                <Comments commentno={blog.commentNo} comments={comment} user={blog.requestedUser} />
+            </InfiniteScroll>
         </Bloglayout>
     )
 }

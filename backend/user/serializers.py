@@ -5,11 +5,11 @@ from rest_framework.validators import UniqueValidator
 
 class CustomUserMinimalDataSerializer(serializers.ModelSerializer):
 
-    userImage = serializers.SerializerMethodField(required=False)
+    userImage = serializers.SerializerMethodField()
 
     class Meta:
         model = CustomUser
-        fields = ['id', 'name', 'userImage']
+        fields = ['id', 'name', 'userImage', 'email', 'userBio', 'profession']
 
     def get_userImage(self, obj):
         if obj.userImage:
@@ -20,20 +20,7 @@ class LikedAndCommentPersonDetails(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['id', 'name']
-
-
-class AuthorDetailsInSingleBlogSerializer(serializers.ModelSerializer):
-
-    userImage = serializers.SerializerMethodField()
-
-    class Meta:
-        model = CustomUser
-        fields = ['id', 'name', 'userImage', 'email', 'userBio', 'profession']
-
-    def get_userImage(self, obj):
-        if obj.userImage:
-            return obj.userImage.url
+        fields = ['name']
 
 
 class AddNewUserSerializer(serializers.ModelSerializer):

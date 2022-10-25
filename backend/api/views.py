@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.views import Response
-from api.serializers import AddBlogSerializer, AddContactSerializer, BlogSerializer, CategorySerializer, RecentBlogsSerializer, SingleBlogSerializer, AddCommentSerializer
+from api.serializers import AddBlogSerializer, AddContactSerializer, BlogSerializer, CategorySerializer, RecentBlogsSerializer, SingleBlogSerializer, CommentsListByBlogSerializer, AddCommentSerializer
 from api.models import Category, Blog, Comment, Contact
 from rest_framework.status import HTTP_202_ACCEPTED, HTTP_404_NOT_FOUND, HTTP_406_NOT_ACCEPTABLE
 from api.pagination import InitialPage
@@ -100,6 +100,14 @@ class AddLikeView(APIView):
 
         except Exception as e:
             return Response(DefaultResponse(e, True), status=HTTP_404_NOT_FOUND)
+
+
+class ShowCommentView(ListAPIView):
+    pagination_class = InitialPage
+    serializer_class = CommentsListByBlogSerializer
+
+    def get_queryset(self):
+        return Comment.objects.all().filter(parentBlog=self.kwargs['id_no'])
 
 
 class AddCommentView(CreateAPIView):

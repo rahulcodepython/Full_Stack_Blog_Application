@@ -48,7 +48,7 @@ export default function bloglayout({ children, title, categories, recentBlogs, t
                                         <ul>
                                             {
                                                 categories.map((category) => {
-                                                    return <li key={category.name}><a href="#">{category.name} <span>({category.totalBlog})</span></a></li>
+                                                    return <li key={category.name}><Link href={`/category/${category.name}`}>{category.name}</Link> <span>({category.totalBlog})</span></li>
                                                 })
                                             }
                                         </ul>

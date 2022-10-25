@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from api.models import Blog, Category, Comment, Contact
-from user.serializers import AuthorDetailsInSingleBlogSerializer, CustomUserMinimalDataSerializer, LikedAndCommentPersonDetails
+from user.serializers import CustomUserMinimalDataSerializer, LikedAndCommentPersonDetails
 
 
 class CommentsChildSerializer(serializers.ModelSerializer):
@@ -72,10 +72,9 @@ class BlogSerializer(serializers.ModelSerializer):
 
 class SingleBlogSerializer(serializers.ModelSerializer):
 
-    author = AuthorDetailsInSingleBlogSerializer(read_only=True)
+    author = CustomUserMinimalDataSerializer(read_only=True)
     image = serializers.SerializerMethodField()
     like = LikedAndCommentPersonDetails(many=True, read_only=True)
-    comments = serializers.SerializerMethodField()
 
     class Meta:
         model = Blog
@@ -84,11 +83,6 @@ class SingleBlogSerializer(serializers.ModelSerializer):
     def get_image(self, obj):
         if obj.image:
             return obj.image.url
-
-    def get_comments(self, obj):
-        comment = Comment.objects.filter(
-            parentBlog=obj.id_no).filter(master=None)
-        return CommentsListByBlogSerializer(comment, many=True).data
 
 
 class AddBlogSerializer(serializers.ModelSerializer):
