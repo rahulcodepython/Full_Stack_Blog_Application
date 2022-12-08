@@ -1,34 +1,90 @@
 import React, { useEffect, useState } from 'react'
 import Bloglayout from '../../layout/home/bloglayout';
-import Comments from '../../components/home/comments';
 import parseddate from '../../scripts/parseddate';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import CommentForm from '../../components/home/commentForm';
+import Comment from '../../components/home/comment';
 
 export default function blog({ blog, categories, recentBlogs }) {
 
-    const [comment, setComment] = useState([])
+    const [comments, setComments] = useState([])
     const [nextLink, setNextLink] = useState(`http://127.0.0.1:8000/api/comments/${blog.id_no}/`)
     const [hasMore, setHasMore] = useState(true)
-    const [totalComment, setTotalComment] = useState(1)
+    const [dataLength, setDataLength] = useState(1)
+    const [like, setLike] = useState(0)
+    const [likeNo, setLikeNo] = useState(blog.likeNo)
+    const [user, setUser] = useState('Guest')
 
     const fetchNextComment = async () => {
         await fetch(nextLink)
-            .then(async response => await response.json())
+            .then(async (response) => await response.json())
             .then(response => {
-                setComment(comment.concat(response.results))
-                setTotalComment(response.count - response.results.length)
+                setComments(comments.concat(response.results))
+                setDataLength(dataLength + response.results.length)
                 if (response.next === null) {
                     setHasMore(false)
                 }
                 else {
                     setHasMore(true)
-                    setNextLink(response.next);
+                    setNextLink(response.next)
                 }
             })
     }
 
+    const addLike = () => {
+        const likeRequestURL = `http://127.0.0.1:8000/api/addlike/${blog.id_no}/`
+
+        const options = {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`
+            }
+        };
+
+        fetch(likeRequestURL, options)
+            .then(response => response.json())
+            .then(response => {
+                if (response.Status === 'Ok') {
+                    setLike(1)
+                    setLikeNo(likeNo + 1)
+                }
+            })
+            .catch(err => console.error(err));
+    }
+
+    const removeLike = () => {
+        const options = {
+            method: 'DELETE',
+            headers: {
+                Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`
+            }
+        };
+
+        fetch(likeRequestURL, options)
+            .then(response => response.json())
+            .then(response => {
+                if (response.Status === 'Ok') {
+                    setLike(0)
+                    setLikeNo(likeNo - 1)
+                }
+            })
+            .catch(err => console.error(err));
+    }
+
+    useEffect(() => {
+        for (const l in blog.like) {
+            if (blog.like[l].id === Number(sessionStorage.getItem("userid"))) {
+                setLike(1)
+            }
+        }
+
+        if (sessionStorage.getItem("userid")) {
+            setUser(sessionStorage.getItem("userid"))
+        }
+    }, [])
+
     return (
-        <Bloglayout title={blog.title} categories={categories} recentBlogs={recentBlogs} tags={blog.seo_tags.split(',')}>
+        <Bloglayout title={blog.title} categories={categories} recentBlogs={recentBlogs} tags={blog.seo_tags ? blog.seo_tags.split(',') : ''}>
             <article className="entry entry-single">
 
                 <div className="entry-img">
@@ -46,8 +102,19 @@ export default function blog({ blog, categories, recentBlogs }) {
                 <div className="entry-meta">
                     <ul>
                         <li className="d-flex align-items-center"><i className="bi bi-clock"></i><a href="#">{parseddate(blog.created)}</a></li>
-                        <li className="d-flex align-items-center"><i className="bi bi-heart"></i><a href="#">{blog.likeNo} Likes</a></li>
+                        <li className="d-flex align-items-center"
+                            style={{ "cursor": "pointer" }}
+                            onClick={() => {
+                                like === 1 ? removeLike() : addLike()
+                            }}>
+                            <i className={`bi bi-${like === 1 ? 'heart-fill' : 'heart'}`}></i>
+                            <a>
+                                {likeNo}
+                            </a>
+                        </li>
                         <li className="d-flex align-items-center"><i className="bi bi-card-list"></i><a href="#">{blog.category}</a></li>
+                        <li className="d-flex align-items-center"><i className="bi bi-pencil-fill"></i><a href={`/editblog/${blog.id_no}`}>Edit Blog</a></li>
+                        <li className="d-flex align-items-center"><i className="bi bi-trash-fill"></i><a href="#">Delete Blog</a></li>
                     </ul>
                 </div>
 
@@ -109,13 +176,34 @@ export default function blog({ blog, categories, recentBlogs }) {
                 </div>
             </div>
 
-            <InfiniteScroll dataLength={totalComment} next={fetchNextComment} hasMore={hasMore} loader={<h4>Loading...</h4>}>
-                <Comments commentno={blog.commentNo} comments={comment} user={blog.requestedUser} />
-            </InfiniteScroll>
+            <div className="blog-comments">
+
+                <h4 className="comments-count" style={{ "marginBottom": "2rem" }}>{blog.commentNo} Comments</h4>
+
+                <CommentForm user={user} blogId={blog.id_no} />
+
+                <InfiniteScroll dataLength={dataLength} next={fetchNextComment} hasMore={hasMore} loader={<h4>Loading...</h4>}>
+                    {
+                        comments.map((comment) => {
+                            return <div id="comment-2" className="comment" key={comment.id_no}>
+                                <Comment data={comment} user={Number(user)} blogId={blog.id_no} parentId={comment.id_no} />
+
+                                {
+                                    comment.childComment.length === 0 ? "" : comment.childComment.map((reply) => {
+                                        return <div id="comment-reply-2" className="comment comment-reply" key={reply.id_no} style={{ "paddingLeft": "5rem" }}>
+                                            <Comment data={reply} user={Number(user)} blogId={blog.id_no} parentId={comment.id_no} />
+                                        </div>
+                                    })
+                                }
+                            </div>
+                        })
+                    }
+                </InfiniteScroll>
+
+            </div>
         </Bloglayout>
     )
 }
-
 
 export async function getServerSideProps(context) {
 

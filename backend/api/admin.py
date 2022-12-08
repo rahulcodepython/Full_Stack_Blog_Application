@@ -16,7 +16,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
-    list_display = ['id_no', 'uploader', 'master']
+    list_display = ['id_no', 'uploader', 'parentBlog', 'master']
 
 
 @admin.register(Contact)

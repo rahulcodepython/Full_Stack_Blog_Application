@@ -16,11 +16,24 @@ class CustomUserMinimalDataSerializer(serializers.ModelSerializer):
             return obj.userImage.url
 
 
+class ActiveUserHamburgerData(serializers.ModelSerializer):
+
+    userImage = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'name', 'userImage']
+
+    def get_userImage(self, obj):
+        if obj.userImage:
+            return obj.userImage.url
+
+
 class LikedAndCommentPersonDetails(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['name']
+        fields = ['id']
 
 
 class AddNewUserSerializer(serializers.ModelSerializer):

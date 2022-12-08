@@ -3,9 +3,7 @@ import React from 'react'
 export default function contact() {
     return (
         <section id="contact" className="contact">
-
             <div className="container" dataaos="fade-up">
-
                 <header className="section-header">
                     <h2>Contact</h2>
                     <p>Contact Us</p>
@@ -67,10 +65,6 @@ export default function contact() {
                                 </div>
 
                                 <div className="col-md-12 text-center">
-                                    <div className="loading">Loading</div>
-                                    <div className="error-message"></div>
-                                    <div className="sent-message">Your message has been sent. Thank you!</div>
-
                                     <button type="submit">Send Message</button>
                                 </div>
 

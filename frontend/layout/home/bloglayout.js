@@ -2,7 +2,7 @@ import Link from 'next/link';
 import React from 'react';
 import Indexlayout from './indexlayout';
 
-export default function bloglayout({ children, title, categories, recentBlogs, tags, fetchNextBlog }) {
+export default function bloglayout({ children, title, categories, recentBlogs, tags }) {
     return (
         <Indexlayout>
             <main>
@@ -48,7 +48,13 @@ export default function bloglayout({ children, title, categories, recentBlogs, t
                                         <ul>
                                             {
                                                 categories.map((category) => {
-                                                    return <li key={category.name}><Link href={`/category/${category.name}`}>{category.name}</Link> <span>({category.totalBlog})</span></li>
+                                                    return <li key={category.name}>
+                                                        <Link href={`/category/${category.name}`}>
+                                                            {category.name}
+                                                        </Link>
+                                                        &nbsp;
+                                                        <span>({category.totalBlog})</span>
+                                                    </li>
                                                 })
                                             }
                                         </ul>

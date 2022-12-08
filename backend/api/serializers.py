@@ -78,7 +78,7 @@ class SingleBlogSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Blog
-        exclude = ['description', 'slug']
+        exclude = ['slug']
 
     def get_image(self, obj):
         if obj.image:

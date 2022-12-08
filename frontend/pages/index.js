@@ -8,7 +8,7 @@ import Services from "../components/home/services";
 import Pricing from "../components/home/pricing";
 import Contact from "../components/home/contact";
 
-export default function index() {
+export default function index({ recentBlogs }) {
     return (
         <Indexlayout>
             <Head>
@@ -22,11 +22,24 @@ export default function index() {
             <main id="main">
                 <Hero />
                 <About />
-                <Recentblogs />
+                <Recentblogs blogs={recentBlogs} />
                 <Services />
                 <Pricing />
                 <Contact />
             </main>
         </Indexlayout>
     );
+}
+
+
+export async function getServerSideProps() {
+
+    const response_recentblogs = await fetch("http://127.0.0.1:8000/api/recentblogs/")
+    const data_recentblogs = await response_recentblogs.json()
+
+    return {
+        props: {
+            recentBlogs: data_recentblogs
+        },
+    }
 }

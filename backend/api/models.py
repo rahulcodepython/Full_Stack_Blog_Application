@@ -1,5 +1,6 @@
 from django.db import models
 from user.models import CustomUser
+from django.utils.text import slugify
 
 
 class Category(models.Model):
@@ -21,7 +22,8 @@ class Blog(models.Model):
         Category, on_delete=models.SET_NULL, related_name='Category', null=True)
     content = models.TextField(blank=True, null=True)
     description = models.TextField(blank=True, null=True, default="")
-    slug = models.SlugField(max_length=100, unique=True, blank=True, null=True)
+    slug = models.SlugField(
+        max_length=100, unique=False, blank=True, null=True)
     likeNo = models.IntegerField(default=0)
     like = models.ManyToManyField(
         CustomUser, related_name='Likes', blank=True)
@@ -32,6 +34,11 @@ class Blog(models.Model):
     class Meta:
         verbose_name = 'Blog'
         verbose_name_plural = 'Blogs'
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        return super().save(*args, **kwargs)
 
 
 class Comment(models.Model):
@@ -54,7 +61,7 @@ class Comment(models.Model):
             blog = Blog.objects.get(id_no=self.parentBlog.id_no)
             blog.commentNo += 1
             blog.save()
-        return super(*args, **kwargs).save()
+        return super(self).save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
         blog = Blog.objects.get(id_no=self.parentBlog.id_no)

@@ -1,20 +1,22 @@
 from rest_framework.views import APIView
 from user.models import CustomUser
-from user.serializers import AddNewUserSerializer, CustomUserMinimalDataSerializer
+from user.serializers import AddNewUserSerializer, ActiveUserHamburgerData
 from rest_framework.response import Response
 from api.views import DefaultResponse
 from rest_framework.status import HTTP_404_NOT_FOUND, HTTP_200_OK, HTTP_202_ACCEPTED, HTTP_201_CREATED, HTTP_406_NOT_ACCEPTABLE, HTTP_304_NOT_MODIFIED
+from rest_framework.permissions import IsAuthenticated
 
 
 class UserInitialDataView(APIView):
 
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, format=None):
         try:
-            if request.user.is_authenticated():
-                user = CustomUser.objects.get(email=request.user)
-                serialized = CustomUserMinimalDataSerializer(user)
+            user = CustomUser.objects.get(email=request.user)
+            serialized = ActiveUserHamburgerData(user)
 
-                return Response(serialized.data, status=HTTP_200_OK)
+            return Response(serialized.data, status=HTTP_200_OK)
 
         except Exception as e:
             return Response(DefaultResponse(e, True), status=HTTP_404_NOT_FOUND)
@@ -22,34 +24,30 @@ class UserInitialDataView(APIView):
 
 class EditUserView(APIView):
 
+    permission_classes = IsAuthenticated
+
     def patch(self, request, format=None):
         try:
-            if request.user.is_authenticated():
-                serialized = AddNewUserSerializer(
-                    request.user, data=request.data, partial=True)
+            serialized = AddNewUserSerializer(
+                request.user, data=request.data, partial=True)
 
-                if serialized.is_valid():
-                    serialized.save()
+            if serialized.is_valid():
+                serialized.save()
 
-                    return Response(DefaultResponse("Your data is modified.", False), status=HTTP_202_ACCEPTED)
+                return Response(DefaultResponse("Your data is modified.", False), status=HTTP_202_ACCEPTED)
 
-                return Response(DefaultResponse("Requested data is not valid.", True), status=HTTP_304_NOT_MODIFIED)
-
-            return Response(DefaultResponse("Requested user does not exist.", True), status=HTTP_406_NOT_ACCEPTABLE)
+            return Response(DefaultResponse("Requested data is not valid.", True), status=HTTP_304_NOT_MODIFIED)
 
         except Exception as e:
             return Response(DefaultResponse(e, True), status=HTTP_404_NOT_FOUND)
 
     def delete(self, request, format=None):
         try:
-            if request.user.is_authenticated():
-                user = CustomUser.objects.get(email=request.user)
+            user = CustomUser.objects.get(email=request.user)
 
-                user.delete()
+            user.delete()
 
-                return Response(DefaultResponse("Your data is deleted.", False), status=HTTP_202_ACCEPTED)
-
-            return Response(DefaultResponse("Requested user does not exist.", True), status=HTTP_406_NOT_ACCEPTABLE)
+            return Response(DefaultResponse("Your data is deleted.", False), status=HTTP_202_ACCEPTED)
 
         except Exception as e:
             return Response(DefaultResponse(e, True), status=HTTP_404_NOT_FOUND)
