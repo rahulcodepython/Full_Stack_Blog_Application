@@ -4,7 +4,8 @@ from django.utils.text import slugify
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=50, primary_key=True, unique=True)
+    idName = models.CharField(max_length=50, primary_key=True, unique=True)
+    name = models.CharField(max_length=50, default="")
 
     class Meta:
         verbose_name = 'Category'
@@ -19,7 +20,7 @@ class Blog(models.Model):
     image = models.ImageField(
         upload_to='blogImage/', blank=True, null=True, default='blogImage/default.png')
     category = models.ForeignKey(
-        Category, on_delete=models.SET_NULL, related_name='Category', null=True)
+        Category, on_delete=models.SET_NULL, related_name='BlogCategory', null=True)
     content = models.TextField(blank=True, null=True)
     description = models.TextField(blank=True, null=True, default="")
     slug = models.SlugField(
@@ -61,7 +62,7 @@ class Comment(models.Model):
             blog = Blog.objects.get(id_no=self.parentBlog.id_no)
             blog.commentNo += 1
             blog.save()
-        return super(self).save(*args, **kwargs)
+        return super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
         blog = Blog.objects.get(id_no=self.parentBlog.id_no)

@@ -167,7 +167,7 @@ export default function navbar() {
                                                 Logout
                                             </a>
                                         </li>
-                                        <li><Link href="/addblog">Add New Blog</Link></li>
+                                        <li><Link href="/uploadblog">Add New Blog</Link></li>
                                     </ul>
                                 </li>
                         }

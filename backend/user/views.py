@@ -24,30 +24,34 @@ class UserInitialDataView(APIView):
 
 class EditUserView(APIView):
 
-    permission_classes = IsAuthenticated
-
     def patch(self, request, format=None):
         try:
-            serialized = AddNewUserSerializer(
-                request.user, data=request.data, partial=True)
+            if request.user.is_authenticated():
+                serialized = AddNewUserSerializer(
+                    request.user, data=request.data, partial=True)
 
-            if serialized.is_valid():
-                serialized.save()
+                if serialized.is_valid():
+                    serialized.save()
 
-                return Response(DefaultResponse("Your data is modified.", False), status=HTTP_202_ACCEPTED)
+                    return Response(DefaultResponse("Your data is modified.", False), status=HTTP_202_ACCEPTED)
 
-            return Response(DefaultResponse("Requested data is not valid.", True), status=HTTP_304_NOT_MODIFIED)
+                return Response(DefaultResponse("Requested data is not valid.", True), status=HTTP_304_NOT_MODIFIED)
+
+            return Response(DefaultResponse("Requested user does not exist.", True), status=HTTP_406_NOT_ACCEPTABLE)
 
         except Exception as e:
             return Response(DefaultResponse(e, True), status=HTTP_404_NOT_FOUND)
 
     def delete(self, request, format=None):
         try:
-            user = CustomUser.objects.get(email=request.user)
+            if request.user.is_authenticated():
+                user = CustomUser.objects.get(email=request.user)
 
-            user.delete()
+                user.delete()
 
-            return Response(DefaultResponse("Your data is deleted.", False), status=HTTP_202_ACCEPTED)
+                return Response(DefaultResponse("Your data is deleted.", False), status=HTTP_202_ACCEPTED)
+
+            return Response(DefaultResponse("Requested user does not exist.", True), status=HTTP_406_NOT_ACCEPTABLE)
 
         except Exception as e:
             return Response(DefaultResponse(e, True), status=HTTP_404_NOT_FOUND)
@@ -57,17 +61,14 @@ class AddNewUserView(APIView):
 
     def post(self, request, format=None):
         try:
-            if request.user.is_authenticated():
-                serialized = AddNewUserSerializer(data=request.data)
+            serialized = AddNewUserSerializer(data=request.data)
 
-                if serialized.is_valid():
-                    serialized.save()
+            if serialized.is_valid():
+                serialized.save()
 
-                    return Response(DefaultResponse(f"New account of {serialized.data['email']} is created.", False), status=HTTP_201_CREATED)
+                return Response(DefaultResponse(f"New account of {serialized.data['email']} is created.", False), status=HTTP_201_CREATED)
 
-                return Response(DefaultResponse("Requested data is not valid.", True), status=HTTP_304_NOT_MODIFIED)
-
-            return Response(DefaultResponse("Requested user does not exist.", True), status=HTTP_406_NOT_ACCEPTABLE)
+            return Response(DefaultResponse("Requested data is not valid.", True), status=HTTP_304_NOT_MODIFIED)
 
         except Exception as e:
             return Response(DefaultResponse(e, True), status=HTTP_404_NOT_FOUND)

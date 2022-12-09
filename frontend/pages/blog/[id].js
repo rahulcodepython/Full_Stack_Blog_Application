@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from 'react'
+import Head from "next/head";
 import Bloglayout from '../../layout/home/bloglayout';
 import parseddate from '../../scripts/parseddate';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import CommentForm from '../../components/home/commentForm';
 import Comment from '../../components/home/comment';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
 
-export default function blog({ blog, categories, recentBlogs }) {
+export default function blog({ blog }) {
+
+    const router = useRouter();
 
     const [comments, setComments] = useState([])
     const [nextLink, setNextLink] = useState(`http://127.0.0.1:8000/api/comments/${blog.id_no}/`)
@@ -31,8 +36,9 @@ export default function blog({ blog, categories, recentBlogs }) {
             })
     }
 
+    const likeRequestURL = `http://127.0.0.1:8000/api/addlike/${blog.id_no}/`
+
     const addLike = () => {
-        const likeRequestURL = `http://127.0.0.1:8000/api/addlike/${blog.id_no}/`
 
         const options = {
             method: 'POST',
@@ -71,6 +77,18 @@ export default function blog({ blog, categories, recentBlogs }) {
             .catch(err => console.error(err));
     }
 
+    const deleteBlog = () => {
+        const options = {
+            method: 'DELETE',
+            headers: {
+                Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`
+            }
+        };
+
+        fetch(`http://127.0.0.1:8000/api/editblog/${blog.id_no}/`, options)
+            .then(response => router.push("/blogs"))
+    }
+
     useEffect(() => {
         for (const l in blog.like) {
             if (blog.like[l].id === Number(sessionStorage.getItem("userid"))) {
@@ -81,48 +99,64 @@ export default function blog({ blog, categories, recentBlogs }) {
         if (sessionStorage.getItem("userid")) {
             setUser(sessionStorage.getItem("userid"))
         }
+
     }, [])
 
     return (
-        <Bloglayout title={blog.title} categories={categories} recentBlogs={recentBlogs} tags={blog.seo_tags ? blog.seo_tags.split(',') : ''}>
-            <article className="entry entry-single">
+        <>
+            <Head>
+                <title>CodeWithRahul Blogs - {blog.title}</title>
+            </Head>
 
-                <div className="entry-img">
-                    <img src={`http://127.0.0.1:8000${blog.image}`} alt="" className="img-fluid" style={{
-                        minWidth: "100%",
-                        minHeight: "100%",
-                        objectFit: "cover",
-                    }} />
-                </div>
+            <Bloglayout title={blog.title}>
+                <article className="entry entry-single">
 
-                <h2 className="entry-title">
-                    <a href="#">{blog.title}</a>
-                </h2>
+                    <div className="entry-img">
+                        <img src={`http://127.0.0.1:8000${blog.image}`} alt="" className="img-fluid" style={{
+                            minWidth: "100%",
+                            minHeight: "100%",
+                            objectFit: "cover",
+                        }} />
+                    </div>
 
-                <div className="entry-meta">
-                    <ul>
-                        <li className="d-flex align-items-center"><i className="bi bi-clock"></i><a href="#">{parseddate(blog.created)}</a></li>
-                        <li className="d-flex align-items-center"
-                            style={{ "cursor": "pointer" }}
-                            onClick={() => {
-                                like === 1 ? removeLike() : addLike()
-                            }}>
-                            <i className={`bi bi-${like === 1 ? 'heart-fill' : 'heart'}`}></i>
-                            <a>
-                                {likeNo}
-                            </a>
-                        </li>
-                        <li className="d-flex align-items-center"><i className="bi bi-card-list"></i><a href="#">{blog.category}</a></li>
-                        <li className="d-flex align-items-center"><i className="bi bi-pencil-fill"></i><a href={`/editblog/${blog.id_no}`}>Edit Blog</a></li>
-                        <li className="d-flex align-items-center"><i className="bi bi-trash-fill"></i><a href="#">Delete Blog</a></li>
-                    </ul>
-                </div>
+                    <h2 className="entry-title">
+                        <a>{blog.title}</a>
+                    </h2>
 
-                <div className='entry-content' style={{ "margin": "2rem 0" }}>
-                    {blog.content}
-                </div>
+                    <div className="entry-meta">
+                        <ul>
+                            <li className="d-flex align-items-center"><i className="bi bi-clock"></i><a href="#">{parseddate(blog.created)}</a></li>
+                            <li className="d-flex align-items-center"
+                                style={{ "cursor": "pointer" }}
+                                onClick={() => {
+                                    like === 1 ? removeLike() : addLike()
+                                }}>
+                                <i className={`bi bi-${like === 1 ? 'heart-fill' : 'heart'}`}></i>
+                                <a>
+                                    {likeNo}
+                                </a>
+                            </li>
+                            <li className="d-flex align-items-center">
+                                <i className="bi bi-card-list"></i>
+                                <a>{blog.category}</a>
+                            </li>
+                            <li className="d-flex align-items-center">
+                                <i className="bi bi-pencil-fill"></i>
+                                <Link href={`/uploadblog/${blog.id_no}`}>Edit Blog</Link>
+                            </li>
+                            <li className="d-flex align-items-center" style={{ "cursor": "pointer" }} onClick={() => deleteBlog()}>
+                                <i className="bi bi-trash-fill"></i>
+                                <a>Delete Blog</a>
+                            </li>
+                        </ul>
+                    </div>
 
-                {/* <div className="entry-content">
+                    <div className='entry-content' style={{ "margin": "2rem 0" }}>
+                        {blog.content}
+                    </div>
+
+                    <>
+                        {/* <div className="entry-content">
                     <p>
                         Similique neque nam consequuntur ad non maxime aliquam quas. Quibusdam animi praesentium. Aliquam et laboriosam eius aut nostrum quidem aliquid dicta.
                         Et eveniet enim. Qui velit est ea dolorem doloremque deleniti aperiam unde soluta. Est cum et quod quos aut ut et sit sunt. Voluptate porro consequatur assumenda perferendis dolore.
@@ -162,46 +196,64 @@ export default function blog({ blog, categories, recentBlogs }) {
                     </p>
 
                 </div> */}
+                    </>
 
-            </article>
-
-            <div className="blog-author d-flex align-items-center">
-                <img src={`http://127.0.0.1:8000${blog.author.userImage}`} className="rounded-circle float-left" alt="" />
-                <div>
-                    <h4>{blog.author.name}</h4>
-                    <div className="social-links">
-                        <a href="">{blog.author.profession}</a>
+                    <div className="entry-footer">
+                        {
+                            blog.seo_tags ? <>
+                                <ul className='tags'>
+                                    {
+                                        blog.seo_tags.split(',').map((tag) => {
+                                            return <li key={tag}><a>{tag}</a></li>
+                                        })
+                                    }
+                                </ul>
+                            </>
+                                :
+                                <></>
+                        }
                     </div>
-                    <p>{blog.author.userBio}</p>
+
+                </article>
+
+                <div className="blog-author d-flex align-items-center">
+                    <img src={`http://127.0.0.1:8000${blog.author.userImage}`} className="rounded-circle float-left" alt="" />
+                    <div>
+                        <h4>{blog.author.name}</h4>
+                        <div className="social-links">
+                            <a>{blog.author.profession}</a>
+                        </div>
+                        <p>{blog.author.userBio}</p>
+                    </div>
                 </div>
-            </div>
 
-            <div className="blog-comments">
+                <div className="blog-comments">
 
-                <h4 className="comments-count" style={{ "marginBottom": "2rem" }}>{blog.commentNo} Comments</h4>
+                    <h4 className="comments-count" style={{ "marginBottom": "2rem" }}>{blog.commentNo} Comments</h4>
 
-                <CommentForm user={user} blogId={blog.id_no} />
+                    <CommentForm user={user} blogId={blog.id_no} />
 
-                <InfiniteScroll dataLength={dataLength} next={fetchNextComment} hasMore={hasMore} loader={<h4>Loading...</h4>}>
-                    {
-                        comments.map((comment) => {
-                            return <div id="comment-2" className="comment" key={comment.id_no}>
-                                <Comment data={comment} user={Number(user)} blogId={blog.id_no} parentId={comment.id_no} />
+                    <InfiniteScroll dataLength={dataLength} next={fetchNextComment} hasMore={hasMore} loader={<h4>Loading...</h4>}>
+                        {
+                            comments.map((comment) => {
+                                return <div id="comment-2" className="comment" key={comment.id_no}>
+                                    <Comment data={comment} user={Number(user)} blogId={blog.id_no} parentId={comment.id_no} />
 
-                                {
-                                    comment.childComment.length === 0 ? "" : comment.childComment.map((reply) => {
-                                        return <div id="comment-reply-2" className="comment comment-reply" key={reply.id_no} style={{ "paddingLeft": "5rem" }}>
-                                            <Comment data={reply} user={Number(user)} blogId={blog.id_no} parentId={comment.id_no} />
-                                        </div>
-                                    })
-                                }
-                            </div>
-                        })
-                    }
-                </InfiniteScroll>
+                                    {
+                                        comment.childComment.length === 0 ? "" : comment.childComment.map((reply) => {
+                                            return <div id="comment-reply-2" className="comment comment-reply" key={reply.id_no} style={{ "paddingLeft": "5rem" }}>
+                                                <Comment data={reply} user={Number(user)} blogId={blog.id_no} parentId={comment.id_no} />
+                                            </div>
+                                        })
+                                    }
+                                </div>
+                            })
+                        }
+                    </InfiniteScroll>
 
-            </div>
-        </Bloglayout>
+                </div>
+            </Bloglayout>
+        </>
     )
 }
 
@@ -211,17 +263,9 @@ export async function getServerSideProps(context) {
     const response_blog = await fetch(`http://127.0.0.1:8000/api/blog/${blog_id}`)
     const data_blog = await response_blog.json()
 
-    const response_category = await fetch("http://127.0.0.1:8000/api/category/")
-    const data_category = await response_category.json()
-
-    const response_recentblogs = await fetch("http://127.0.0.1:8000/api/recentblogs/")
-    const data_recentblogs = await response_recentblogs.json()
-
     return {
         props: {
-            blog: data_blog,
-            categories: data_category,
-            recentBlogs: data_recentblogs
+            blog: data_blog
         },
     }
 }

@@ -1,8 +1,31 @@
 import Link from 'next/link';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Indexlayout from './indexlayout';
 
-export default function bloglayout({ children, title, categories, recentBlogs, tags }) {
+export default function Bloglayout({ children, title }) {
+
+    const [categories, setCategories] = useState([])
+    const [recentBlogs, setRecentBlogs] = useState([])
+
+    const fetchCategories = async () => {
+        await fetch("http://127.0.0.1:8000/api/category/")
+            .then((response) => response.json())
+            .then((response) => setCategories(response))
+            .catch((error) => console.log(error))
+    }
+
+    const fetchRecentBlogs = async () => {
+        await fetch("http://127.0.0.1:8000/api/recentblogs/")
+            .then((response) => response.json())
+            .then((response) => setRecentBlogs(response))
+            .catch((error) => console.log(error))
+    }
+
+    useEffect(() => {
+        fetchCategories();
+        fetchRecentBlogs();
+    }, [])
+
     return (
         <Indexlayout>
             <main>
@@ -24,19 +47,20 @@ export default function bloglayout({ children, title, categories, recentBlogs, t
                             </div>
 
                             <div className="col-lg-4">
-
                                 <div className="sidebar">
-
                                     <h3 className="sidebar-title">Recent Posts</h3>
                                     <div className="sidebar-item recent-posts">
                                         {
-                                            recentBlogs.map((blogs) => {
-                                                return <div className="post-item clearfix" key={blogs.id_no}>
-                                                    <img src={`http://127.0.0.1:8000${blogs.image}`} alt="" />
-                                                    <h4><Link href={`/blog/${blogs.id_no}`}>{blogs.title}</Link></h4>
+                                            recentBlogs.map((blog) => {
+                                                return <div className="post-item clearfix" key={blog.id_no}>
+                                                    <img src={`http://127.0.0.1:8000${blog.image}`} alt="" />
+                                                    <h4>
+                                                        <Link href={`/blog/${blog.id_no}`}>
+                                                            {blog.title}
+                                                        </Link>
+                                                    </h4>
                                                     <time>
-                                                        {blogs.author}
-                                                        <span style={{ "marginLeft": "1rem", "marginRight": "0.2rem" }}><i className="bi bi-card-list"></i></span>{blogs.category}
+                                                        {blog.author} &nbsp; {blog.category}
                                                     </time>
                                                 </div>
                                             })
@@ -48,8 +72,8 @@ export default function bloglayout({ children, title, categories, recentBlogs, t
                                         <ul>
                                             {
                                                 categories.map((category) => {
-                                                    return <li key={category.name}>
-                                                        <Link href={`/category/${category.name}`}>
+                                                    return <li key={category.idName}>
+                                                        <Link href={`/blogs/${category.idName}`}>
                                                             {category.name}
                                                         </Link>
                                                         &nbsp;
@@ -59,23 +83,7 @@ export default function bloglayout({ children, title, categories, recentBlogs, t
                                             }
                                         </ul>
                                     </div>
-
-                                    {
-                                        tags && <>
-                                            <h3 className="sidebar-title">Tags</h3>
-                                            <div className="sidebar-item tags">
-                                                <ul>
-                                                    {
-                                                        tags.map((tag) => {
-                                                            return <li key={tag}><a href="#">{tag}</a></li>
-                                                        })
-                                                    }
-                                                </ul>
-                                            </div>
-                                        </>
-                                    }
                                 </div>
-
                             </div>
                         </div>
                     </div>

@@ -1,10 +1,12 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { useFormik } from 'formik';
 import { useRouter } from 'next/router';
 
-export default function BlogForm({ categories, blog }) {
+export default function BlogForm({ blog }) {
 
     const router = useRouter();
+
+    const [categories, setCategories] = useState([])
 
     const { values, handleChange, handleSubmit } = useFormik({
         initialValues: blog ? {
@@ -19,6 +21,7 @@ export default function BlogForm({ categories, blog }) {
                 "description": '',
                 "content": ''
             },
+
         onSubmit: (value) => {
             const options = {
                 method: blog ? 'PATCH' : 'POST',
@@ -38,6 +41,16 @@ export default function BlogForm({ categories, blog }) {
         }
     })
 
+    const fetchCategories = async () => {
+        await fetch("http://127.0.0.1:8000/api/category/")
+            .then((response) => response.json())
+            .then((response) => setCategories(response))
+    }
+
+    useEffect(() => {
+        fetchCategories();
+    }, [])
+
     return (
         <section id="contact" className="contact" style={{ "marginTop": "4rem" }}>
             <div className="container" dataaos="fade-up">
@@ -53,6 +66,7 @@ export default function BlogForm({ categories, blog }) {
                             </>
                     }
                 </header>
+
                 <div className="row gy-4">
                     <div className="col-lg-12">
                         <form onSubmit={handleSubmit} className="php-email-form" encType='multipart/form-data'>
@@ -61,16 +75,12 @@ export default function BlogForm({ categories, blog }) {
                                     <input type="text" name="title" className="form-control" placeholder="Blog Title" value={values.title} onChange={handleChange} required />
                                 </div>
 
-                                {/* <div className="col-md-12">
-                                            <input type="file" name="image" className="form-control" value={values.image} onChange={handleChange} required />
-                                        </div> */}
-
                                 <div className="col-md-12 ">
                                     <select className="form-control" name="category" value={values.category} onChange={handleChange} required>
 
                                         {
                                             categories.map((category) => {
-                                                return <option key={category.name}>{category.name}</option>
+                                                return <option key={category.idName} value={category.idName}>{category.name}</option>
                                             })
                                         }
                                     </select>

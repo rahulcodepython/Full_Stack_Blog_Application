@@ -20,7 +20,9 @@ export default function commentForm({ user, blogId, parentId, commentForEditing,
 
         fetch(apiURL, options)
             .then(response => response.json())
-            .then(response => router.reload())
+            .then(response => {
+                router.reload()
+            })
             .catch(err => console.error(err));
     }
 

@@ -21,7 +21,7 @@ class CategoryView(ListAPIView):
 
 
 class RecentBlogsView(ListAPIView):
-    queryset = Blog.objects.order_by('-created')[:5]
+    queryset = Blog.objects.order_by('-created')[:6]
     serializer_class = RecentBlogsSerializer
 
 
